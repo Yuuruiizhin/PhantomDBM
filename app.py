@@ -8,9 +8,9 @@ app.secret_key = 'your_secret_key'
 
 # --- Configuración de la Base de Datos para el login principal (la que usa los API) ---
 EMPRESA_DB_CONFIG = {
-    'host': '192.168.1.16',
-    'user': 'PhantomDB',
-    'password': 'PhantomDbManagerTeamPassword',
+    'host': 'localhost',
+    'user': 'root',
+    'password': '',
     'database': 'phantomdb'
 }
 
