@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Phantom DB Manager - Inicio</title>
+    <link rel="stylesheet" href="Css/yrz_buttons.css">
+    <link rel="stylesheet" href="Css/index.css">
+    <link rel="icon" href="Img/MISC/phantom.png" type="icono">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="icono">
+            <img src="Img/MISC/phantomw.png" alt="ict icono">
+            </div>
+        <div class="contenido">
+            <h1>Phantom DataBase Manager</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Inicio</a></li>
+                    <li><a href="Html/team.html">Contacto</a></li>
+                    <li><a href="Html/servicio.html">Servicio</a></li>
+                    <li><a href="Html/galeria.html" class="active">Galería</a></li>
+                    <li><a href="dversions/1.1.0.zip" download>Descargar</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section id="inicio">
+            <h2>Acerca de Phantom DB Manager</h2>
+            <p>Phantom DB Manager es una herramienta de gestión de bases de datos de última generación, diseñada para simplificar y optimizar la administración de datos para desarrolladores y administradores. Ofrece una interfaz intuitiva, un rendimiento excepcional y características avanzadas para manejar bases de datos de cualquier tamaño y complejidad.</p>
+        </section>
+
+        <section id="carrusel-imagenes">
+            <h2>Imágenes Destacadas</h2>
+            <div class="carrusel">
+                <img src="Img/MISC/screenshot_1.png" alt="Captura de pantalla 1" class="activo">
+                <img src="Img/MISC/screenshot_2.png" alt="Captura de pantalla 2">
+                <img src="Img/MISC/screenshot_3.png" alt="Captura de pantalla 3">
+            </div>
+            
+            <div id="modal" class="modal" onclick="cerrarModal()">
+                <img id="imagenGrande" src="" alt="Imagen en grande">
+            </div>
+        </section>
+        
+        <section id="quienes-somos">
+            <h2>Quiénes Somos: God Of Software</h2>
+            <p>Somos God Of Software, un equipo de desarrolladores de software apasionados y dedicados, encargados del desarrollo y ajuste continuo de Phantom DB Manager. Nuestra misión es crear soluciones de software potentes y fáciles de usar que empoderen a nuestros clientes.</p>
+            <p>Nuestra sede se encuentra en el corazón de la innovación tecnológica, en San Francisco, EEUU.</p>
+
+            <div class="map-container">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3153.3082103565437!2d-122.39999498468164!3d37.78841027975872!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80858079f046f41b%3A0x6b70123c5c9945a!2sSalesforce%20Transit%20Center!5e0!3m2!1sen!2sus!4v1626804689255!5m2!1sen!2sus" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+            </div>
+        </section>
+
+        <section id="contacto">
+            <h2>Contacto</h2>
+            <p>Para más información o soporte, por favor contáctenos a través de los siguientes correos electrónicos:</p>
+            <ul>
+                <li>Soporte Técnico: support@Phantomdb.gos</li>
+                <li>Ventas y Consultas: sales@Phantomdb.gos</li>
+                <li>Prensa y Medios: media@Phantomdb.gos</li>
+            </ul>
+            
+            <form action="#" method="post" class="contact-form">
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombre" name="nombre" required>
+                
+                <label for="email">Correo Electrónico:</label>
+                <input type="email" id="email" name="email" required>
+                
+                <label for="mensaje">Mensaje:</label>
+                <textarea id="mensaje" name="mensaje" rows="5" required></textarea>
+                
+                <button type="submit">Enviar Mensaje</button>
+            </form>
+        </section>
+    </main>
+    <footer>
+        <p>© Todos los derechos reservados</p>
+    </footer>
+
+    <script src="Scripts/carrusel.js"></script>
+</body>
+</html>

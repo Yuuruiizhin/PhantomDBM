@@ -1,0 +1,273 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: rgb(33, 33, 33);
+    color: white;
+}
+
+/* Custom Scrollbar - Minimalist, gray with light purple indicator */
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: #333; /* Dark gray track */
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #DA9CFF; /* Light purple thumb */
+    border-radius: 10px;
+    border: 3px solid #333; /* Padding around the thumb */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #b87cff; /* Lighter purple on hover */
+}
+
+main p {
+    text-align: justify;
+}
+
+/* -------- superior -------- */
+
+header {
+    background-color: #111;
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    font-family: Helvetica;
+}
+
+.icono {
+    margin-right: 20px;
+}
+
+.icono img {
+    width: 110px;
+    height: 100px;
+}
+
+.contenido {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.contenido nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 20px;
+}
+
+.contenido nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+.contenido ul li a:hover {
+    color: #DA9CFF;
+}
+
+/* ------------- */
+main {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    background-color: rgba(42, 42, 42, 0.747);
+    margin-top: 1%;
+    margin-left: 2%;
+    margin-right: 2%;
+    border-radius: 20px;
+    padding: 20px;
+}
+
+/* Estilos para las nuevas secciones */
+main section {
+    width: 80%;
+    max-width: 800px;
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+main h2 {
+    color: #DA9CFF;
+    border-bottom: 2px solid #DA9CFF;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+/* Carrusel de imágenes */
+.carrusel {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    margin: auto;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.carrusel img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+    cursor: pointer;
+    border-radius: 10px;
+}
+
+.carrusel img.activo {
+    opacity: 1;
+}
+
+/* Modal para el zoom de la imagen */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.9);
+    justify-content: center;
+    align-items: center;
+}
+
+#imagenGrande {
+    margin: auto;
+    display: block;
+    max-width: 90%;
+    max-height: 90%;
+}
+
+/* Estilos del formulario de contacto */
+.contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+    text-align: left;
+}
+
+.contact-form label {
+    font-weight: bold;
+    color: #DA9CFF;
+}
+
+.contact-form input,
+.contact-form textarea {
+    padding: 10px;
+    border: 1px solid #555;
+    background-color: #333;
+    color: white;
+    border-radius: 5px;
+    font-size: 1em;
+    width: 100%;
+    box-sizing: border-box; /* Asegura que el padding no añada ancho */
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+    outline: none;
+    border-color: #DA9CFF;
+    box-shadow: 0 0 5px #DA9CFF;
+}
+
+.contact-form button {
+    background-color: #DA9CFF;
+    color: #111;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.contact-form button:hover {
+    background-color: #b87cff;
+}
+
+/* Mapa de la sede */
+.map-container {
+    width: 100%;
+    height: 400px;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 20px;
+}
+
+.map-container iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+/* Estilos de contacto */
+#contacto ul {
+    list-style: none;
+    padding: 0;
+}
+
+#contacto ul li {
+    background-color: rgba(60, 60, 60, 0.8);
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+footer {
+    background-color: #111;
+    padding: 15px 0;
+}
+
+footer p {
+    color: white;
+    font-size: 0.8em;
+    margin: 0;
+    text-align: center;
+}
+
+#active {
+    color: #DA9CFF;
+}
+@keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fade-out {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+.fade-out {
+    animation: fade-out 0.5s ease-out forwards;
+}
+
+body.is-loading {
+    animation: fade-out 0.3s ease-out forwards;
+    pointer-events: none;
+}
