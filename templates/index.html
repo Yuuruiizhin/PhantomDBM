@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Base de Datos</title>
+    <link rel="icon" href="../static/img/phantomw.png" type="icono">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Definimos los colores por defecto (Phantom) en la raíz */
+        :root {
+            --color-primario: #333; /* Zonas que abarquen la mayor parte de la pagina */
+            --color-secundario: #212529; /* Zonas que abarquen zonas grandes pero sin ser aun la mayoria de la pagina */
+            --color-terciario: #DA9CFF; /* Detalles, Botones, ETC */
+            --color-texto-claro: #fff;
+            --color-texto-oscuro: #000;
+        }
+
+        /* Sobrescribimos las variables si hay empresa */
+        {% if empresa %}
+        :root {
+            --color-primario: {{ empresa.color_one }};
+            --color-secundario: {{ empresa.color_two }};
+            --color-terciario: {{ empresa.color_three }};
+        }
+        {% endif %}
+        
+        body { 
+            background-color: var(--color-primario);
+            color: var(--color-texto-claro);
+        }
+        
+        .navbar-brand-container { display: flex; align-items: center; }
+        .circular-logo { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; margin-right: 10px; }
+        .circular-logo img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .navbar-dark.bg-dark {
+            background-color: var(--color-secundario) !important;
+            color: var(--color-texto-claro);
+        }
+        .navbar .nav-link, .navbar .navbar-brand, .navbar .navbar-text {
+            color: var(--color-texto-claro) !important;
+        }
+        .navbar .dropdown-menu {
+            background-color: var(--color-secundario);
+            border-color: var(--color-terciario);
+        }
+        .navbar .dropdown-item {
+            color: var(--color-texto-claro);
+        }
+        .navbar .dropdown-item:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .custom-jumbotron { 
+            background-color: var(--color-secundario);
+            color: var(--color-texto-claro);
+        }
+
+        .table-responsive {
+            color: var(--color-texto-oscuro);
+        }
+
+        .table-striped tbody tr:nth-of-type(odd) { background-color: rgba(255, 255, 255, 0.8); }
+        .table-striped tbody tr:nth-of-type(even) { background-color: rgba(255, 255, 255, 0.6); }
+
+        .thead-dark th { 
+            background-color: var(--color-secundario); 
+            color: var(--color-texto-claro); 
+        }
+
+        .modal-content { 
+            background-color: var(--color-primario); 
+            color: var(--color-texto-claro); 
+        }
+        .modal-header, .modal-footer { 
+            border-color: var(--color-terciario); 
+        }
+        
+        .btn-purple, .btn-custom-edit, .btn-primary { 
+            background-color: var(--color-terciario); 
+            border-color: var(--color-terciario); 
+            color: var(--color-texto-oscuro); 
+        }
+        .btn-purple:hover, .btn-custom-edit:hover, .btn-primary:hover { 
+            filter: brightness(0.8);
+            color: var(--color-texto-oscuro);
+        }
+
+        /* Clase para cambiar el color del texto de los botones */
+        body.light-text-on-buttons .btn-purple, 
+        body.light-text-on-buttons .btn-custom-edit,
+        body.light-text-on-buttons .btn-primary {
+            color: var(--color-texto-claro);
+        }
+        
+        .btn-outline-danger, .btn-outline-warning, .btn-outline-info {
+            color: var(--color-terciario);
+            border-color: var(--color-terciario);
+        }
+        .btn-outline-danger:hover, .btn-outline-warning:hover, .btn-outline-info:hover {
+            background-color: var(--color-terciario);
+            color: var(--color-texto-oscuro);
+        }
+        footer {
+            background-color: var(--color-secundario);
+            color: var(--color-texto-claro);
+            text-align: center;
+            padding: 10px 0;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+            height: 50px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <div class="navbar-brand-container">
+                <div class="circular-logo">
+                    {% if empresa %}
+                    <img src="{{ empresa.img }}" alt="Logo de la Empresa">
+                    {% else %}
+                    <img src="{{ url_for('static', filename='img/phantomw.png') }}" alt="Logo">
+                    {% endif %}
+                </div>
+                <a class="navbar-brand" href="{{ url_for('index') }}">Gestión de Base de Datos</a>
+            </div>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Bases de Datos
+                        </a>
+                        <ul class="dropdown-menu" id="db-list">
+                            </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Tablas
+                        </a>
+                        <ul class="dropdown-menu" id="table-list">
+                            </ul>
+                    </li>
+                </ul>
+                
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-outline-info me-2" id="toggle-text-color">Contraste</button>
+
+                    {% if 'db_config' in session %}
+                        <a href="{{ url_for('logout') }}" class="btn btn-outline-danger me-2">Desconectar Host</a>
+                    {% endif %}
+
+                    {% if 'empresa_usuario' in session %}
+                        <span class="navbar-text me-3">
+                            Sesión de Empresa: {{ session['empresa_usuario'] }}
+                        </span>
+                        <a href="{{ url_for('empresas_logout') }}" class="btn btn-outline-warning">Salir Empresa</a>
+                    {% else %}
+                        <a href="{{ url_for('empresas_login') }}" class="btn btn-outline-info">Empresa</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="row">
+                    <div class="col-12 mt-3">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endwith %}
+        <div class="p-5 mb-4 custom-jumbotron rounded-3">
+            <div class="container-fluid py-5">
+                <h1 class="display-5 fw-bold" id="main-title">Seleccione una tabla</h1>
+                <p class="fs-4" id="main-subtitle">Use el menú de la barra de navegación para explorar sus bases de datos y tablas.</p>
+            </div>
+        </div>
+
+        <div id="main-content">
+            </div>
+    </div>
+
+    <div class="modal fade" id="crudModal" tabindex="-1" aria-labelledby="crudModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="crudModalLabel"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="crud-form">
+                        </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" form="crud-form">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy Todos los Derechos reservados - Phantom DBM</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const dbList = document.getElementById('db-list');
+        const tableList = document.getElementById('table-list');
+        const mainContent = document.getElementById('main-content');
+        const crudModal = new bootstrap.Modal(document.getElementById('crudModal'));
+        const crudForm = document.getElementById('crud-form');
+        const crudModalLabel = document.getElementById('crudModalLabel');
+        let currentDb = null;
+        let currentTable = null;
+        let currentSchema = null;
+        let primaryKey = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchDatabases();
+            document.getElementById('toggle-text-color').addEventListener('click', toggleTextColor);
+        });
+        
+        function toggleTextColor() {
+            document.body.classList.toggle('light-text-on-buttons');
+        }
+
+        function fetchDatabases() {
+            fetch('/api/databases')
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(errorData => Promise.reject(errorData));
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    dbList.innerHTML = '';
+                    data.forEach(db => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<a class="dropdown-item" href="#" data-db="${db}">${db}</a>`;
+                        dbList.appendChild(li);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error al obtener las bases de datos:', error);
+                    mainContent.innerHTML = `<div class="alert alert-danger">Error: ${error.error}</div>`;
+                });
+        }
+
+        dbList.addEventListener('click', (e) => {
+            e.preventDefault();
+            const target = e.target.closest('a');
+            if (!target) return;
+            const dbName = target.getAttribute('data-db');
+            if (dbName) {
+                currentDb = dbName;
+                fetchTables(dbName);
+                document.getElementById('main-title').innerText = `Base de datos: ${dbName}`;
+                document.getElementById('main-subtitle').innerText = 'Seleccione una tabla para ver su contenido.';
+                mainContent.innerHTML = '';
+            }
+        });
+
+        function fetchTables(dbName) {
+            fetch(`/api/tables/${dbName}`)
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(errorData => Promise.reject(errorData));
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    tableList.innerHTML = '';
+                    data.forEach(table => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<a class="dropdown-item" href="#" data-table="${table}">${table}</a>`;
+                        tableList.appendChild(li);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error al obtener las tablas:', error);
+                    tableList.innerHTML = `<li class="dropdown-item disabled">Error: ${error.error}</li>`;
+                });
+        }
+
+        tableList.addEventListener('click', (e) => {
+            e.preventDefault();
+            const target = e.target.closest('a');
+            if (!target) return;
+            
+            const tableName = target.getAttribute('data-table');
+            if (tableName) {
+                currentTable = tableName;
+                document.getElementById('main-title').innerText = `Tabla: ${tableName}`;
+                document.getElementById('main-subtitle').innerText = 'Contenido de la tabla.';
+                fetchTableData(tableName);
+            }
+        });
+
+        function fetchTableData(tableName) {
+            if (!currentDb) {
+                mainContent.innerHTML = `<div class="alert alert-danger">Por favor, seleccione una base de datos primero.</div>`;
+                return;
+            }
+            fetch(`/api/list/${currentDb}/${tableName}`)
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(errorData => Promise.reject(errorData));
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    currentSchema = data.schema;
+                    primaryKey = getPrimaryKeyFromSchema(currentSchema);
+                    renderTable(data.data, currentSchema);
+                })
+                .catch(error => {
+                    mainContent.innerHTML = `<div class="alert alert-danger">Error al cargar la tabla: ${error.error}</div>`;
+                    console.error('Error:', error);
+                });
+        }
+
+        function getPrimaryKeyFromSchema(schema) {
+            const pkColumn = schema.find(col => col.Key === 'PRI');
+            return pkColumn ? pkColumn.Field : null;
+        }
+
+        function renderTable(data, schema) {
+            const headers = schema.map(col => `<th>${col.Field}</th>`).join('');
+            const body = data.map(row => {
+                const cells = schema.map(col => `<td>${row[col.Field] !== null ? row[col.Field] : ''}</td>`).join('');
+                return `<tr>
+                    ${cells}
+                    <td>
+                        <button class="btn btn-sm btn-custom-edit edit-btn" data-id="${row[primaryKey]}">Editar</button>
+                        <button class="btn btn-sm btn-danger delete-btn" data-id="${row[primaryKey]}">Eliminar</button>
+                    </td>
+                </tr>`;
+            }).join('');
+
+            mainContent.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Listado de ${currentTable}</h2>
+                    <button class="btn btn-purple" id="add-btn">Añadir Nuevo</button>
+                </div>
+                <div class="table-responsive draggable-table-container">
+                    <table class="table table-striped table-bordered">
+                        <thead class="thead-dark">
+                            <tr>
+                                ${headers}
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${body}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            document.getElementById('add-btn').addEventListener('click', () => openFormModal(null));
+            document.querySelectorAll('.edit-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                openFormModal(e.target.getAttribute('data-id'));
+            }));
+            document.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                deleteItem(e.target.getAttribute('data-id'));
+            }));
+        }
+
+        function openFormModal(id) {
+            crudForm.innerHTML = '';
+            crudForm.setAttribute('data-id', id);
+            
+            const isEditing = id !== null;
+            crudModalLabel.innerText = isEditing ? `Editar Registro en ${currentTable}` : `Añadir Nuevo Registro en ${currentTable}`;
+
+            currentSchema.forEach(column => {
+                // --- CORRECCIÓN AQUÍ: Excluir campos auto-incrementables y con fechas automáticas en ambos modos (añadir y editar) ---
+                if (column.Extra.includes('auto_increment')) {
+                    return; // Omitir este campo
+                }
+                if (column.Default && (column.Default.toUpperCase().includes('CURRENT_TIMESTAMP') || column.Default.toUpperCase().includes('NOW()'))) {
+                    return; // Omitir este campo
+                }
+                
+                const div = document.createElement('div');
+                div.className = 'mb-3';
+                
+                const label = document.createElement('label');
+                label.className = 'form-label';
+                label.innerText = column.Field;
+                
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'form-control';
+                input.name = column.Field;
+                input.required = column.Null !== 'YES' && !column.Default;
+                
+                if (isEditing && column.Key === 'PRI') {
+                    input.type = 'hidden';
+                    input.readOnly = true;
+                    div.appendChild(input);
+                } else {
+                    div.appendChild(label);
+                    div.appendChild(input);
+                }
+
+                crudForm.appendChild(div);
+            });
+
+            if (isEditing) {
+                fetch(`/api/manage/${currentDb}/${currentTable}/${id}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        for (const key in data) {
+                            const input = crudForm.querySelector(`[name="${key}"]`);
+                            if (input) {
+                                input.value = data[key];
+                            }
+                        }
+                    })
+                    .catch(error => console.error('Error al obtener datos para editar:', error));
+            }
+            
+            crudModal.show();
+        }
+
+        crudForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = crudForm.getAttribute('data-id');
+            const isEditing = id !== 'null';
+            
+            const formData = new FormData(crudForm);
+            const data = Object.fromEntries(formData.entries());
+
+            const url = isEditing ? `/api/manage/${currentDb}/${currentTable}/${id}` : `/api/manage/${currentDb}/${currentTable}`;
+            const method = 'POST';
+
+            fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errorData => Promise.reject(errorData));
+                }
+                return response.json();
+            })
+            .then(() => {
+                crudModal.hide();
+                fetchTableData(currentTable);
+            })
+            .catch(error => {
+                console.error('Error al guardar el formulario:', error);
+                alert(`Error al guardar el registro: ${error.error}`);
+            });
+        });
+        
+        function deleteItem(id) {
+            if (confirm('¿Está seguro de que desea eliminar este registro?')) {
+                fetch(`/api/delete/${currentDb}/${currentTable}/${id}`, { method: 'POST' })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(errorData => Promise.reject(errorData));
+                        }
+                        return response.json();
+                    })
+                    .then(() => {
+                        fetchTableData(currentTable);
+                    })
+                    .catch(error => {
+                        console.error('Error al eliminar el registro:', error);
+                        alert(`Error al eliminar el registro: ${error.error}`);
+                    });
+            }
+        }
+    </script>
+</body>
+</html>
