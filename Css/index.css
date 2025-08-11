@@ -154,6 +154,41 @@ main h2 {
     align-items: center;
 }
 
+.contenedoras {
+    display: flex;
+    justify-content: center; /* Centra los elementos horizontalmente */
+    align-items: center; /* Centra los elementos verticalmente */
+    flex-wrap: wrap; /* Permite que las tarjetas se envuelvan a la siguiente línea si no hay espacio */
+}
+
+.asociadocard {
+    margin: 10px; /* Elimina los márgenes izquierdo y derecho individuales y usa un solo valor para todos */
+    border-radius: 15%;
+    background-color: #333;
+    color: white;
+    transition: transform 0.3s ease, color 0.3s ease;
+    width: 160px;
+    height: 150px;
+    font-size: medium;
+    display: flex; /* Convierte el contenedor en un flexbox para centrar su contenido */
+    flex-direction: column; /* Organiza los elementos en columna (imagen y h3) */
+    justify-content: center; /* Centra el contenido horizontalmente */
+    align-items: center; /* Centra el contenido verticalmente */
+    text-align: center; /* Asegura que el texto (h3) esté centrado */
+}
+
+.asociadocard:hover {
+    color: #DA9CFF;
+    transform: scale(1.1); /* Aplica el zoom a toda la tarjeta */
+}
+
+.asociadocard img {
+    width: 80px;
+    height: 80px;
+    border-radius: 25px;
+}
+
+
 #imagenGrande {
     margin: auto;
     display: block;
