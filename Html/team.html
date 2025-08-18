@@ -79,8 +79,9 @@
                 </div>
             </div>
         </section>
-
-        <iframe src="https://vandstrom.com/404" width="800" height="450" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+        <div class="canva">
+            <iframe src="https://www.canva.com/design/DAGvykAtAOc/_ZO0Wf1Ed-5f6jk2AyQvTg/view?embed" width="800" height="450" allowfullscreen="" loading="lazy"></iframe>
+        </div>
 
         <section id="contacto">
             <h2>Contacto</h2>
@@ -101,7 +102,7 @@
                     <label for="mensaje">Mensaje detallado:</label>
                     <textarea id="mensaje" name="mensaje" rows="8" required></textarea>
                 </div>
-                <button type="submit" class="submit-btn">Enviar Mensaje</button>
+                <button type="submit" class="submit-btn" onclick="sendedmsg()">Enviar Mensaje</button>
             </form>
         </section>
     </main>
@@ -111,5 +112,6 @@
 
     <script src="../Scripts/team.js"></script>
     <script src="../Scripts/back.js"></script>
+    <script src="../Scripts/alertas.js"></script>
 </body>
 </html>
