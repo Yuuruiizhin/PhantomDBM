@@ -1,3 +1,0 @@
-pyinstaller --onefile --noconsole --name PhantomDBM --icon="static/img/phantomw.png" --add-data "static/img/phantomw.png;static/img" loader.py
-
-pyinstaller --onefile --name phantomsv --icon="static/img/phantomw.png" --add-data "templates;templates" --add-data "static;static" app2.py

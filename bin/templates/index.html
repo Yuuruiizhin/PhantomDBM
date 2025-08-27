@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phantom DB Manager</title>
+    <link rel="icon" href="../static/img/phantomw.png" type="icono">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        /* Definimos los colores por defecto (Phantom) en la raíz */
+        :root {
+            --color-primario: #333;
+            --color-secundario: #212529;
+            --color-terciario: #DA9CFF;
+            --color-texto-claro: #fff;
+            --color-texto-oscuro: #000;
+            --navbar-height: 56px;
+            --sidebar-width: 250px;
+            --footer-height: 50px;
+        }
+
+        /* Sobrescribimos las variables si hay empresa */
+        {% if empresa %}
+        :root {
+            --color-primario: {{ empresa.color_one }};
+            --color-secundario: {{ empresa.color_two }};
+            --color-terciario: {{ empresa.color_three }};
+        }
+        {% endif %}
+
+        body {
+            background-color: var(--color-primario);
+            color: var(--color-texto-claro);
+            padding-top: var(--navbar-height);
+            padding-bottom: var(--footer-height); /* Nueva adición para evitar que el contenido se superponga con el footer */
+            transition: margin-left 0.3s ease;
+        }
+
+        /* Estilos para el contenedor de la tabla principal */
+        .main-content-shrunk {
+            max-height: 200px;
+            overflow-y: scroll;
+            overflow-x: auto;
+            border-bottom: 2px solid var(--color-terciario);
+            margin-bottom: 20px;
+        }
+
+        .navbar-brand-container { display: flex; align-items: center; }
+        .circular-logo { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; margin-right: 10px; }
+        .circular-logo img { width: 100%; height: 100%; object-fit: cover; }
+
+        .navbar-dark.bg-dark {
+            background-color: var(--color-secundario) !important;
+            color: var(--color-texto-claro);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1030;
+        }
+        .navbar .nav-link, .navbar .navbar-brand, .navbar .navbar-text, .navbar .btn-hamburger {
+            color: var(--color-texto-claro) !important;
+        }
+        .navbar .dropdown-menu {
+            background-color: var(--color-secundario);
+            border-color: var(--color-terciario);
+        }
+        .navbar .dropdown-item {
+            color: var(--color-texto-claro);
+        }
+        .navbar .dropdown-item:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Estilos ajustados para el jumbotron */
+        .custom-jumbotron {
+            background-color: var(--color-secundario);
+            color: var(--color-texto-claro);
+            padding: 1rem 2rem;
+            margin-bottom: 1rem !important;
+        }
+        .custom-jumbotron .display-5 {
+            font-size: 2.5rem;
+        }
+        .custom-jumbotron .fs-4 {
+            font-size: 1.25rem;
+        }
+
+        .table-responsive {
+            color: var(--color-texto-oscuro);
+        }
+
+        .table-striped tbody tr:nth-of-type(odd) td { background-color: rgba(255, 255, 255, 0.8); }
+        .table-striped tbody tr:nth-of-type(even) td { background-color: rgba(255, 255, 255, 0.6); }
+
+        .table-striped tbody tr .btn {
+            background-color: transparent;
+            border-color: transparent;
+            color: var(--color-texto-oscuro);
+            transition: all 0.3s ease;
+        }
+
+        .table-striped tbody tr:hover .btn-custom-edit,
+        .table-striped tbody tr:hover .btn-danger {
+            background-color: var(--color-terciario) !important;
+            border-color: var(--color-terciario) !important;
+            color: var(--color-texto-oscuro) !important;
+        }
+
+        .thead-dark th {
+            background-color: var(--color-secundario);
+            color: var(--color-texto-claro);
+        }
+
+        .modal-content {
+            background-color: var(--color-primario);
+            color: var(--color-texto-claro);
+        }
+        .modal-header, .modal-footer {
+            border-color: var(--color-terciario);
+        }
+        /* ESTILOS AÑADIDOS PARA FORMS Y LABELS */
+        .form-label {
+            color: var(--color-texto-claro) !important;
+        }
+        .form-control, .form-select {
+            background-color: var(--color-secundario);
+            color: var(--color-texto-claro);
+            border-color: var(--color-terciario);
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: var(--color-secundario);
+            color: var(--color-texto-claro);
+            border-color: var(--color-terciario);
+            box-shadow: 0 0 0 0.25rem rgba(218, 156, 255, 0.5);
+        }
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .btn-purple, .btn-custom-edit, .btn-primary {
+            background-color: var(--color-terciario);
+            border-color: var(--color-terciario);
+            color: var(--color-texto-oscuro);
+        }
+        .btn-purple:hover, .btn-custom-edit:hover, .btn-primary:hover {
+            filter: brightness(0.8);
+            color: var(--color-texto-oscuro);
+        }
+
+        body.light-text-on-buttons .btn-purple,
+        body.light-text-on-buttons .btn-custom-edit,
+        body.light-text-on-buttons .btn-primary {
+            color: var(--color-texto-claro);
+        }
+
+        .btn-outline-danger, .btn-outline-warning, .btn-outline-info {
+            color: var(--color-terciario);
+            border-color: var(--color-terciario);
+        }
+        .btn-outline-danger:hover, .btn-outline-warning:hover, .btn-outline-info:hover {
+            background-color: var(--color-terciario);
+            color: var(--color-texto-oscuro);
+        }
+
+        /* Estilos modificados para el footer */
+        footer {
+            background-color: rgba(red, green, blue, 0);
+            color: var(--color-texto-claro);
+            text-align: center;
+            padding: 10px 0;
+            height: var(--footer-height);
+            width: 100%;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: var(--navbar-height);
+            left: calc(var(--sidebar-width) * -1);
+            bottom: 0;
+            z-index: 1020;
+            width: var(--sidebar-width);
+            background-color: var(--color-secundario);
+            overflow-y: auto;
+            transition: left 0.3s ease;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .main-content-wrapper.active {
+            margin-left: var(--sidebar-width);
+        }
+
+        .sidebar .nav-link {
+            font-weight: 500;
+            color: var(--color-texto-claro);
+        }
+        .sidebar .nav-link:hover {
+            background-color: var(--color-terciario);
+            color: var(--color-texto-oscuro);
+        }
+        .sidebar .nav-link.active {
+            background-color: var(--color-terciario);
+            color: var(--color-texto-oscuro);
+            border-radius: 15px;
+            font-weight: bold;
+        }
+        .btn-toggle-nav a {
+            padding: .1875rem .5rem;
+            color: var(--color-texto-claro);
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-toggle-nav a:hover {
+            background-color: var(--color-terciario);
+            color: var(--color-texto-oscuro) !important;
+        }
+        .btn-toggle-nav a.active {
+            background-color: var(--color-terciario) !important;
+            color: var(--color-texto-oscuro) !important;
+        }
+
+        .btn-delete-db, .btn-delete-table {
+            color: #ff4d4d;
+            border: none;
+            background: none;
+            padding: 0 5px;
+        }
+        .btn-delete-db:hover, .btn-delete-table:hover {
+            color: #ff1a1a;
+        }
+        .btn-delete-db {
+            border-radius: 15px;
+            margin-left: 10px;
+        }
+
+        .btn-hamburger {
+            background: none;
+            border: none;
+            padding: 0.25rem 0.75rem;
+            line-height: 1;
+            color: var(--color-texto-claro);
+        }
+        .btn-hamburger:focus {
+            box-shadow: none;
+        }
+        .hamburger-icon {
+            display: inline-block;
+            width: 1.5em;
+            height: 1.5em;
+            vertical-align: middle;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.8%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 100%;
+        }
+
+        ::-webkit-scrollbar {
+            width: 12px;
+            height: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--color-primario);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: var(--color-terciario);
+            border-radius: 10px;
+            border: 3px solid var(--color-primario);
+        }
+
+        .table-responsive table th,
+        .table-responsive table td {
+            white-space: nowrap;
+        }
+
+        /* Estilos para el formulario de columnas */
+        .column-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .column-row .form-control, .column-row .form-select {
+            flex: 1;
+        }
+        .column-row .btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Estilos para las notificaciones personalizadas */
+        #notification-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1050;
+            width: 90%;
+            max-width: 500px;
+        }
+        .notification {
+            display: none;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0.25rem;
+            color: #fff;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .notification.show {
+            display: block;
+            opacity: 1;
+        }
+        .notification.success {
+            background-color: #28a745;
+        }
+        .notification.danger {
+            background-color: #dc3545;
+        }
+        .notification.warning {
+            background-color: #ffc107;
+        }
+        .notification.info {
+            background-color: #17a2b8;
+        }
+
+        .pagination .page-link {
+            color: var(--color-terciario);
+            background-color: transparent;
+            border-color: var(--color-terciario);
+        }
+        .pagination .page-item.active .page-link {
+            background-color: var(--color-terciario);
+            border-color: var(--color-terciario);
+            color: var(--color-texto-oscuro);
+        }
+        
+        /* Estilos para el modal CLI */
+        #cli-output {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 5px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            margin-bottom: 1rem;
+            border: 1px solid var(--color-terciario);
+        }
+        #cli-input {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            border: 1px solid var(--color-terciario);
+        }
+        .cli-prompt {
+            color: var(--color-terciario);
+            background-color: #1e1e1e;
+            border: 1px solid var(--color-terciario);
+        }
+        .cli-error {
+            color: #ff4d4d;
+        }
+        .cli-success {
+            color: #64ffda;
+        }
+        .sql-table-results {
+            border: 1px solid #ddd;
+            width: 100%;
+            margin-top: 1rem;
+            border-collapse: collapse;
+        }
+        .sql-table-results th, .sql-table-results td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .sql-table-results th {
+            background-color: var(--color-secundario);
+            color: var(--color-texto-claro);
+        }
+        .sql-table-results tr:nth-child(even) {
+            background-color: #3f3f3f;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <button class="btn btn-hamburger me-2" id="sidebar-toggle-btn" type="button">
+                <span class="hamburger-icon"></span>
+            </button>
+            <div class="navbar-brand-container">
+                <div class="circular-logo">
+                    {% if empresa %}
+                    <img src="{{ empresa.img }}" alt="Logo de la Empresa">
+                    {% else %}
+                    <img src="{{ url_for('static', filename='img/phantomw.png') }}" alt="Logo">
+                    {% endif %}
+                </div>
+                <a class="navbar-brand" href="{{ url_for('index') }}">Gestión de Base de Datos</a>
+            </div>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    </ul>
+
+                <div class="d-flex align-items-center">
+                    <a href="https://phantomdbm.netlify.app" class="btn btn-outline-info me-2">Información</a>
+                    <button class="btn btn-outline-info me-2" id="toggle-text-color">Contraste de botones</button>
+
+                    {% if 'db_config' in session %}
+                        <a href="{{ url_for('logout') }}" class="btn btn-outline-danger me-2">Desconectar Host</a>
+                    {% endif %}
+
+                    {% if 'empresa_usuario' in session %}
+                        <span class="navbar-text me-3">
+                            Sesión de Empresa: {{ session['empresa_usuario'] }}
+                        </span>
+                        <a href="{{ url_for('empresas_logout') }}" class="btn btn-outline-warning">Salir Empresa</a>
+                    {% else %}
+                        <a href="{{ url_for('empresas_login') }}" class="btn btn-outline-info">Empresa</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <nav id="sidebar" class="sidebar">
+        <div class="p-3">
+            <p class="h5 text-white">Bases de Datos</p>
+            <ul class="nav flex-column" id="db-accordion">
+                </ul>
+        </div>
+        <div class="p-3">
+            <!--<button class="btn btn-purple w-100 mt-3" data-bs-toggle="modal" data-bs-target="#createModal">Crear Nuevo</button> -->
+        </div>
+    </nav>
+
+    <div id="notification-container"></div>
+
+    <div class="main-content-wrapper">
+        <div class="container-fluid mt-3">
+            {% if 'db_config' in session %}
+            <div class="alert alert-info" role="alert">
+                Conectado al host: <strong>{{ session['db_config']['host'] }}</strong>
+            </div>
+            {% endif %}
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <script>
+                        document.addEventListener('DOMContentLoaded', () => {
+                            {% for category, message in messages %}
+                                showNotification('{{ message | safe }}', '{{ category }}');
+                            {% endfor %}
+                        });
+                    </script>
+                {% endif %}
+            {% endwith %}
+
+            <main class="px-md-4">
+                <div class="p-5 mb-4 custom-jumbotron rounded-3" id="welcome-jumbotron">
+                    <div class="container-fluid py-5">
+                        <h1 class="display-5 fw-bold" id="main-title">Bienvenido a PhantomDB Manager</h1>
+                        <p class="fs-4" id="main-subtitle">Use el menú de la barra de navegación para explorar sus bases de datos y tablas.<br>Cabe recalcar que esta version de el software es beta por lo que puede tener algunos errores.</p>
+                    </div>
+                </div>
+
+                <div id="selection-indicator" class="mb-4 d-none">
+                    <p class="h5 text-white">Selección Actual: <span id="current-db-indicator"></span> -> <span id="current-table-indicator"></span></p>
+                </div>
+
+                <div id="main-content">
+                </div>
+            </main>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="crudModal" tabindex="-1" aria-labelledby="crudModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="crudModalLabel"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="crud-form">
+                        </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" form="crud-form">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createModalLabel">Crear Nuevo Elemento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="create-choice-step">
+                        <p>¿Qué desea crear?</p>
+                        <div class="d-flex justify-content-around">
+                            <button class="btn btn-purple" id="create-db-btn">Base de Datos</button>
+                            <button class="btn btn-purple" id="create-table-btn">Tabla</button>
+                        </div>
+                    </div>
+
+                    <div id="create-db-step" class="d-none">
+                        <h5>Crear Nueva Base de Datos</h5>
+                        <form id="create-db-form">
+                            <div class="mb-3">
+                                <label for="new-db-name" class="form-label">Nombre de la Base de Datos</label>
+                                <input type="text" class="form-control" id="new-db-name" name="db_name" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Crear</button>
+                            <button type="button" class="btn btn-secondary" id="back-to-choice-db">Atrás</button>
+                        </form>
+                    </div>
+
+                    <div id="create-table-step" class="d-none">
+                        <h5>Crear Nueva Tabla</h5>
+                        <form id="create-table-form">
+                            <div class="mb-3">
+                                <label for="table-db-name" class="form-label">Base de Datos</label>
+                                <select class="form-select" id="table-db-name" name="database_name" required>
+                                    </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="new-table-name" class="form-label">Nombre de la Tabla</label>
+                                <input type="text" class="form-control" id="new-table-name" name="table_name" required>
+                            </div>
+                            <h6>Columnas</h6>
+                            <div id="columns-container">
+                                <div class="column-row">
+                                    <input type="text" class="form-control column-name" placeholder="Nombre" required>
+                                    <select class="form-select column-type" required>
+                                        <option value="INT">INT</option>
+                                        <option value="VARCHAR">VARCHAR</option>
+                                        <option value="TEXT">TEXT</option>
+                                        <option value="DATE">DATE</option>
+                                        <option value="DATETIME">DATETIME</option>
+                                        <option value="FLOAT">FLOAT</option>
+                                        <option value="BOOLEAN">BOOLEAN</option>
+                                    </select>
+                                    <input type="text" class="form-control column-length" placeholder="Longitud (ej: 255)">
+                                    <div class="form-check">
+                                        <input class="form-check-input column-pk" type="checkbox" id="pk-1">
+                                        <label class="form-check-label" for="pk-1">PK</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input column-nn" type="checkbox" id="nn-1">
+                                        <label class="form-check-label" for="nn-1">NOT NULL</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input column-ai" type="checkbox" id="ai-1" disabled>
+                                        <label class="form-check-label" for="ai-1">AI</label>
+                                    </div>
+                                    <button type="button" class="btn btn-danger remove-column-btn">&times;</button>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-secondary mt-2" id="add-column-btn">Añadir Columna</button>
+                            <div class="d-flex justify-content-end mt-4">
+                                <button type="submit" class="btn btn-primary me-2">Crear</button>
+                                <button type="button" class="btn btn-secondary" id="back-to-choice-table">Atrás</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal fade" id="cliModal" tabindex="-1" aria-labelledby="cliModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cliModalLabel">Consola SQL</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="cli-output">Bienvenido a la Consola SQL. Escribe una consulta y presiona Ejecutar.</div>
+                    <form id="cli-form">
+                        <div class="input-group mt-3">
+                            <span class="input-group-text cli-prompt">SQL ></span>
+                            <textarea class="form-control" id="cli-input" placeholder="Escribe tu consulta SQL aquí..." rows="4"></textarea>
+                            <button class="btn btn-primary" type="submit">Ejecutar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <footer>
+        <p>&copy Todos los Derechos reservados - Phantom DBM</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../static/js/main.js"></script>
+</body>
+</html>
